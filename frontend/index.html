@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokat Dijital Carsi - Esnaf Paneli</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="loginPage" class="login-page" style="display:flex">
+  <div class="login-card">
+    <div class="login-logo"><div class="logo-icon">\U0001f3ea</div>
+      <h1>Tokat Dijital Carsi</h1>
+      <p>Esnaf Paneli</p></div>
+    <div id="loginAlert" class="alert" style="display:none"></div>
+    <form id="loginForm" onsubmit="handleLogin(event)" style="display:block">
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="ornek@email.com"></div>
+      <div class="form-group"><label>Sifre</label><input type="password" id="loginSifre" placeholder="......"></div>
+      <button type="submit" class="btn btn-primary">Giris Yap</button>
+      <div class="form-switch" id="formSwitch">Hesabin yok mu? <a onclick="navigate('kayit')">Kayit Ol</a></div>
+      <div style="margin-top:16px;padding:12px;background:#FEF9E7;border-radius:8px;font-size:0.8rem;text-align:center">
+        Demo: <strong>demo@tokatcarsi.com</strong> / <strong>demo123</strong></div>
+    </form>
+    <form id="registerForm" onsubmit="handleRegister(event)" style="display:none">
+      <div class="form-group"><label>Firma Adi</label><input id="regFirma" placeholder="Firma adi"></div>
+      <div class="form-group"><label>Adiniz</label><input id="regSahip" placeholder="Ad Soyad"></div>
+      <div class="form-group"><label>Telefon</label><input id="regTel" type="tel" placeholder="0555"></div>
+      <div class="form-group"><label>Email</label><input id="regEmail" type="email"></div>
+      <div class="form-group"><label>Sifre</label><input id="regSifre" type="password"></div>
+      <button type="submit" class="btn btn-primary">Kayit Ol</button>
+      <div class="form-switch">Hesabin var mi? <a onclick="navigate('giris')">Giris Yap</a></div>
+    </form>
+  </div>
+</div>
+<div id="appPage" class="app-layout" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="brand-icon">\U0001f3ea</div><div class="brand-text"><h2>Tokat Dijital Carsi</h2><span>Esnaf Paneli</span></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Genel</div>
+      <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')"><span class="nav-icon">\U0001f4ca</span> Panel</div>
+      <div class="nav-section-title">Isletme</div>
+      <div class="nav-item" data-page="muhasebe" onclick="navigate('muhasebe')"><span class="nav-icon">\U0001f4cb</span> On Muhasebe</div>
+      <div class="nav-item" data-page="analiz" onclick="navigate('analiz')"><span class="nav-icon">\U0001f4c8</span> Dukkan Analizi</div>
+      <div class="nav-item" data-page="urunler" onclick="navigate('urunler')"><span class="nav-icon">\U0001f4e6</span> Urunlerim</div>
+      <div class="nav-item" data-page="cari" onclick="navigate('cari')"><span class="nav-icon">\U0001f4b0</span> Cari Hesap</div>
+      <div class="nav-section-title">Gelisim</div>
+      <div class="nav-item" data-page="egitim" onclick="navigate('egitim')"><span class="nav-icon">\U0001f4da</span> Dijital Egitim</div>
+      <div class="nav-section-title">Iletisim</div>
+      <div class="nav-item" data-page="whatsapp" onclick="navigate('whatsapp')"><span class="nav-icon">\U0001f4ac</span> WhatsApp</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user" onclick="navigate('profil')">
+        <div class="user-avatar" id="sidebarAvatar">E</div>
+        <div class="user-info"><div class="name" id="sidebarName">Esnaf</div><div class="role" id="sidebarRole">Firma</div></div>
+        <span>\u2699\ufe0f</span></div></div>
+  </aside>
+  <main class="main-content">
+    <header class="header">
+      <div class="header-left">
+        <button class="mobile-toggle header-btn" onclick="toggleSidebar()">\u2630</button>
+        <h2 id="pageTitle">Panel</h2></div>
+      <div class="header-right">
+        <button class="header-btn" onclick="alert('Yakinda!')">\U0001f514</button>
+        <button class="header-btn" onclick="alert('destek@tokatcarsi.com')">\u2753</button></div>
+    </header>
+    <section class="content" id="pageContent"></section>
+  </main>
+</div>
+<div id="modalOverlay" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modalTitle">Modal</h3><button class="modal-close" onclick="closeModal()">\u2715</button></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
