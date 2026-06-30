@@ -3,8 +3,6 @@ services:
     build: .
     container_name: tokat-dijital-carsi
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:8080:80"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tokat-carsi.entrypoints=websecure"
@@ -13,4 +11,3 @@ services:
       - "traefik.http.services.tokat-carsi.loadbalancer.server.port=80"
     environment:
       - SECRET_KEY=tokat-dijital-carsi-prod-key-2026
-      - TZ=Europe/Istanbul

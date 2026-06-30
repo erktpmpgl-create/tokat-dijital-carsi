@@ -410,3 +410,10 @@ def demo_seed(db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# Serve frontend static files
+from fastapi.staticfiles import StaticFiles
+import os
+_fp = os.path.join(os.path.dirname(__file__), '..', 'frontend')
+if os.path.exists(_fp):
+    app.mount("/", StaticFiles(directory=_fp, html=True), name="frontend")
