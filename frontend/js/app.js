@@ -131,13 +131,35 @@ function egitimDetay(id){
     tam?null:async()=>{const r=await apiCall('POST','/egitimler/'+id+'/tamamla');if(r){closeModal();loadPage('egitim')}},tam?'Kapat':'Tamamla')
 }
 
-async function renderWhatsApp(c){
-  c.innerHTML='<div class="loading"><div class="spinner"></div> Yukleniyor...</div>';
-  const d=await apiCall('GET','/whatsapp/mesajlar');
-  if(!d)return;
-  c.innerHTML='<div class="muhasebe-header"><div><h3>WhatsApp Mesajlari</h3></div></div><div class="card"><div class="card-header"><h3>Mesajlar</h3></div><div class="card-body">'+
-    (d.length===0?'<div class="empty-state"><p>Henuz mesaj yok.</p></div>':d.map(m=>'<div class="whatsapp-mesaj '+m.yon+'"><div class="mesaj-icerik"><div class="meta">'+(m.musteri_adi||'?')+' - '+tarih(m.tarih)+'</div><div class="text">'+m.mesaj+'</div></div></div>').join(''))+'</div></div>'}
+async function renderWhatsApp(c) {
+  c.innerHTML='<div style="margin-bottom:20px"><h3>WhatsApp Bot</h3><p style="color:var(--text-light);font-size:0.85rem">Dogal dil ile esnaf bulma</p></div><div class="chat-container"><div class="chat-header"><div class="avatar">🤖</div><div><div>Tokat Dijital Carsi</div><div class="status">Cevrimici</div></div></div><div class="chat-messages" id="chatMessages"><div class="chat-msg bot"><div>👋 Merhaba! Ben Tokat Dijital Carsi asistaniyim.<br><br>Deneyin:<br>🚌 Tokat otobus<br>🍽️ Istanbul restoran<br>🏪 Ankara bakkal</div><div class="msg-time">Az once</div></div></div><div class="chat-quick" id="chatQuick"><button onclick="botGonder('Tokat otobus')">🚌 Otobus</button><button onclick="botGonder('Istanbul restoran')">🍽️ Restoran</button><button onclick="botGonder('Ankara bakkal')">🏪 Market</button><button onclick="botGonder('Merhaba')">👋 Merhaba</button></div><div class="chat-input"><input type="text" id="chatInput" placeholder="Mesaj yazin..." onkeypress="if(event.key=='Enter')botGonder()"><button id="chatSendBtn" onclick="botGonder()">📤</button></div></div>';
+}
 
+window.botGonder = async function(m) {
+  const inp = document.getElementById('chatInput');
+  const btn = document.getElementById('chatSendBtn');
+  const msg = m || (inp ? inp.value : '');
+  if (!msg || !msg.trim()) return;
+  if (inp) inp.value = '';
+  if (btn) btn.disabled = true;
+  const msgs = document.getElementById('chatMessages');
+  if (!msgs) return;
+  msgs.innerHTML += '<div class="chat-msg user"><div>' + msg + '</div><div class="msg-time">Simdi</div></div>';
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const res = await apiCall('POST', '/bot/soru', {'mesaj': msg});
+    if (res && res.mesaj) {
+      const txt = res.mesaj.replace(/\n/g, '<br>');
+      msgs.innerHTML += '<div class="chat-msg bot"><div>' + txt + '</div><div class="msg-time">Simdi</div></div>';
+    } else {
+      msgs.innerHTML += '<div class="chat-msg bot"><div>Anlayamadim.</div><div class="msg-time">Simdi</div></div>';
+    }
+  } catch(e) {
+    msgs.innerHTML += '<div class="chat-msg bot"><div>Hata: ' + e.message + '</div><div class="msg-time">Simdi</div></div>';
+  }
+  msgs.scrollTop = msgs.scrollHeight;
+  if (btn) btn.disabled = false;
+};
 async function renderCari(c){
   c.innerHTML='<div class="loading"><div class="spinner"></div> Yukleniyor...</div>';
   const d=await apiCall('GET','/cari');if(!d)return;
