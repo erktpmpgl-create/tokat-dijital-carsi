@@ -73,8 +73,8 @@ class EsnafCevap(BaseModel):
     ilce: str
     aktif: bool
     premium: bool
-    profil_fotografi: str
-    aciklama: str
+    profil_fotografi: Optional[str] = None
+    aciklama: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -89,7 +89,7 @@ class IslemInput(BaseModel):
     tur: str
     kategori: str
     tutar: float
-    aciklama: str = ""
+    aciklama: Optional[str] = None
     odeme_yontemi: str = "nakit"
     musteri_adi: str = ""
     musteri_telefon: str = ""
@@ -103,7 +103,7 @@ class UrunInput(BaseModel):
     fiyat: float = 0.0
     birim: str = "adet"
     stok: int = 0
-    aciklama: str = ""
+    aciklama: Optional[str] = None
 
 
 class EsnafGuncelle(BaseModel):
