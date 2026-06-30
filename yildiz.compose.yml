@@ -1,0 +1,13 @@
+services:
+  tokat-yildizi:
+    image: nginx:alpine
+    container_name: tokat-yildizi
+    restart: unless-stopped
+    volumes:
+      - /root/tokat-carsi/yildiz:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tokat-yildizi.entrypoints=websecure"
+      - "traefik.http.routers.tokat-yildizi.rule=Host(`tokatyildizi.srv1779386.hstgr.cloud`)"
+      - "traefik.http.routers.tokat-yildizi.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tokat-yildizi.loadbalancer.server.port=80"

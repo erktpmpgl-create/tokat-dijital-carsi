@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tokat Yildizi Turizm</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{--gold:#D4A840;--kirmizi:#8B1A1A;--lacivert:#1A3A5C;--dark:#1a1a2e;--bg:#f5f0eb}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Segoe UI,sans-serif;background:var(--bg);color:#333;line-height:1.6}
+.top-bar{background:var(--dark);color:#fff;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;font-size:0.8rem;position:fixed;top:0;left:0;right:0;z-index:100}
+.top-bar a{color:var(--gold);text-decoration:none}
+nav{background:var(--kirmizi);padding:0 16px;position:fixed;top:34px;left:0;right:0;z-index:99;display:flex;align-items:center;height:56px;gap:12px}
+nav .logo{font-size:1.2rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px;white-space:nowrap}
+nav .logo span{color:var(--gold)}
+nav .menu{display:flex;gap:4px;margin-left:auto;overflow-x:auto}
+nav .menu a{color:rgba(255,255,255,0.9);text-decoration:none;padding:8px 14px;border-radius:6px;font-size:0.85rem;white-space:nowrap}
+nav .menu a:hover{background:rgba(255,255,255,0.15);color:#fff}
+.menu-toggle{display:none;background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;padding:8px}
+main{padding-top:90px}
+.hero{background:linear-gradient(135deg,var(--lacivert),var(--dark));color:#fff;padding:48px 20px 40px;text-align:center}
+.hero h1{font-size:2rem;font-weight:800;margin-bottom:8px}
+.hero h1 span{color:var(--gold)}
+.hero p{font-size:1rem;opacity:0.9;margin-bottom:16px}
+.search-box{background:#fff;border-radius:16px;padding:20px;margin:-20px 16px 24px;box-shadow:0 8px 30px rgba(0,0,0,0.15);z-index:10}
+.search-box h3{font-size:0.9rem;color:var(--lacivert);margin-bottom:12px}
+.search-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}  
+.search-row select,.search-row input{width:100%;padding:12px;border:2px solid #eee;border-radius:10px;font-size:0.9rem;background:#fafafa}
+.search-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--kirmizi),#C0392B);color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer}
+.search-btn:hover{transform:translateY(-1px);box-shadow:0 4px 15px rgba(139,26,26,0.3)}
+.results{display:none;padding:0 16px 24px}
+.results.show{display:block}
+.result-card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.result-card .route{font-weight:700;color:var(--lacivert)}
+.result-card .time{font-size:0.85rem;color:#666;margin-top:4px}
+.result-card .price{font-size:1.3rem;font-weight:800;color:var(--kirmizi)}
+.result-card .wa-btn{background:#25D366;color:#fff;border:none;border-radius:50%;width:44px;height:44px;cursor:pointer;font-size:1.3rem;flex-shrink:0}
+.features{padding:24px 16px}.features h2{text-align:center;color:var(--lacivert);margin-bottom:16px;font-size:1.3rem}
+.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.feature-card{background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.feature-card h4{font-size:0.9rem;color:var(--lacivert)}
+.routes{padding:24px 16px}.routes h2{text-align:center;color:var(--lacivert);margin-bottom:16px}
+.route-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.route-tag{background:#fff;padding:10px 14px;border-radius:8px;font-size:0.85rem;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.club{background:linear-gradient(135deg,var(--gold),#F0D68A);padding:32px 16px;text-align:center}
+.club h2{color:var(--dark);font-size:1.4rem;margin-bottom:8px}
+.club-btn{display:inline-block;padding:12px 28px;background:var(--dark);color:var(--gold);border-radius:10px;text-decoration:none;font-weight:700}
+.wa-float{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem;box-shadow:0 4px 15px rgba(37,211,102,0.4);cursor:pointer;z-index:50;text-decoration:none;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 4px 15px rgba(37,211,102,0.4)}50%{box-shadow:0 4px 25px rgba(37,211,102,0.7)}}
+footer{background:var(--dark);color:rgba(255,255,255,0.7);padding:32px 16px 80px;text-align:center;font-size:0.85rem}
+.loading{text-align:center;padding:20px}
+.spinner{width:32px;height:32px;border:3px solid #eee;border-top-color:var(--kirmizi);border-radius:50%;animation:spin 0.6s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:480px){.search-row{grid-template-columns:1fr}.menu-toggle{display:block}nav .menu{display:none;position:absolute;top:56px;left:0;right:0;background:var(--kirmizi);flex-direction:column;padding:8px}nav .menu.open{display:flex}}
+@media(min-width:768px){.feature-grid{grid-template-columns:repeat(3,1fr)}.route-grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="top-bar"><span>444 00 90</span><a href="tel:4440090">Hemen Ara</a></div>
+<nav>
+<button class="menu-toggle" onclick="document.querySelector('.menu').classList.toggle('open')">☰</button>
+<div class="logo"> Tokat <span>Yildizi</span></div>
+<div class="menu">
+<a href="#" onclick="showPage('home')">Ana Sayfa</a>
+<a href="#" onclick="showPage('sefer')">Seferler</a>
+<a href="#" onclick="showPage('club')">Yildiz Club</a>
+<a href="#" onclick="showPage('iletisim')">Iletisim</a>
+</div>
+</nav>
+<main>
+<div id="page-home">
+<div class="hero">
+<h1>Tokat <span>Yildizi</span></h1>
+<p>Guven & Kalite ile 30 yildir yollardayiz</p>
+</div>
+<div class="search-box">
+<h3>Bilet Ara</h3>
+<div class="search-row">
+<select id="nereden"><option>Tokat</option><option>Ankara</option><option>Istanbul</option><option>Samsun</option><option>Amasya</option><option>Sivas</option></select>
+<select id="nereye"><option>Ankara</option><option>Istanbul</option><option>Samsun</option><option>Tokat</option><option>Amasya</option><option>Sivas</option></select>
+</div>
+<div class="search-row"><input type="date" id="tarih"></div>
+<button class="search-btn" onclick="searchSefer()">Sefer Ara</button>
+</div>
+<div class="results" id="results"><div id="resultList"></div></div>
+<div class="features">
+<h2>Neden Tokat Yildizi?</h2>
+<div class="feature-grid">
+<div class="feature-card"><h4>Konforlu Koltuk</h4></div>
+<div class="feature-card"><h4>Ucretsiz WiFi</h4></div>
+<div class="feature-card"><h4>USB Sarj</h4></div>
+<div class="feature-card"><h4>ikram Servisi</h4></div>
+</div>
+</div>
+<div class="routes">
+<h2>Populer Rotalar</h2>
+<div class="route-grid">
+<div class="route-tag">Tokat - Ankara</div>
+<div class="route-tag">Tokat - Istanbul</div>
+<div class="route-tag">Tokat - Samsun</div>
+<div class="route-tag">Tokat - Amasya</div>
+<div class="route-tag">Tokat - Sivas</div>
+<div class="route-tag">Tokat - Ordu</div>
+</div>
+</div>
+</div>
+<div id="page-sefer" style="display:none;padding:16px">
+<h3 style="color:var(--lacivert);margin-bottom:12px">Seferler</h3>
+<div id="seferListesi" class="results show"></div>
+</div>
+<div id="page-club" style="display:none;padding:16px">
+<div class="club" style="border-radius:12px"><h2>Yildiz Club</h2><p>Her bilette puan kazanin!</p></div>
+</div>
+<div id="page-iletisim" style="display:none;padding:16px">
+<div style="background:#fff;border-radius:12px;padding:20px">
+<p><strong>444 00 90</strong></p>
+<p>Tokat Otogar, Merkez/Tokat</p>
+<a href="https://wa.me/905304400090" style="display:block;text-align:center;background:#25D366;color:#fff;padding:12px;border-radius:10px;text-decoration:none;margin-top:12px;font-weight:700">WhatsApp'tan Yaz</a>
+</div>
+</div>
+</main>
+<a href="https://wa.me/905304400090" class="wa-float" target="_blank">W</a>
+<footer>
+<h3>Tokat Yildizi Turizm</h3>
+<p>444 00 90 - Tokat Otogar</p>
+<p style="font-size:0.75rem;margin-top:8px;opacity:0.5">Tokat Dijital Carsi desteklidir</p>
+</footer>
+<script>
+document.getElementById("tarih").valueAsDate = new Date();
+function searchSefer() {
+  const n = document.getElementById("nereden").value;
+  const e = document.getElementById("nereye").value;
+  const t = document.getElementById("tarih").value;
+  const list = document.getElementById("resultList") || document.getElementById("seferListesi");
+  document.getElementById("results").classList.add("show");
+  const demo = [
+    {saat:"07:30",fiyat:350,koltuk:22,sure:"8s"},
+    {saat:"10:00",fiyat:400,koltuk:15,sure:"7.5s"},
+    {saat:"13:15",fiyat:350,koltuk:28,sure:"8s"},
+    {saat:"15:45",fiyat:450,koltuk:8,sure:"7s"},
+    {saat:"18:30",fiyat:400,koltuk:18,sure:"7.5s"},
+    {saat:"21:00",fiyat:300,koltuk:30,sure:"8.5s"},
+  ];
+  list.innerHTML = demo.map(s => '<div class="result-card"><div><div class="route">'+n+' - '+e+'</div><div class="time">'+s.saat+' - '+s.sure+' - '+s.koltuk+' bos</div></div><div style="text-align:right"><div class="price">'+s.fiyat+' TL</div><button class="wa-btn" onclick="window.open('https://wa.me/905304400090?text=Merhaba%20'+n+'/'+e+'%20'+s.saat+'%20icin%20bilet')">W</button></div></div>').join("");
+}
+function showPage(p){document.querySelectorAll("[id^=page-]").forEach(x=>x.style.display="none");document.getElementById("page-"+p).style.display="block"}
+setTimeout(searchSefer, 300);
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+</script>
+</body>
+</html>
