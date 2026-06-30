@@ -411,6 +411,66 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
+
+@app.post("/api/bot/soru")
+def bot_soru(mesaj: dict, db: Session = Depends(get_db)):
+    from bot_engine import BotYonetici
+    bot = BotYonetici(db)
+    cevap = bot.telgraf_mesaj(mesaj.get("mesaj", ""))
+    return cevap
+@app.get("/api/bot/sektorler")
+def bot_sektorler():
+    from bot_engine import SEKTORLER
+    return [{"anahtar": k, **v} for k, v in SEKTORLER.items()]
+@app.get("/api/bot/sehirler")
+def bot_sehirler():
+    from bot_engine import SEHIRLER
+    return SEHIRLER
+
+
+@app.post("/api/demo/seed-v2")
+def demo_seed_v2(db: Session = Depends(get_db)):
+    from models import Esnaf, Islem, Urun
+    from datetime import datetime, timezone, timedelta
+    import random
+    if db.query(Esnaf).count() > 3:
+        return {"mesaj": "Zaten yeterli demo verisi var"}
+    demo = [
+        ("Tokat Seyahat","Mehmet Usta","05551111111","tokat@demo.com","otobus","Merkez","Tokat","Tokat otobus firmasi."),
+        ("Tarihi Tokat Kebabi","Ali Usta","05552222222","kebap@demo.com","restoran","Merkez","Tokat","1930dan beri Tokat kebabi."),
+        ("Zile Kahvesi","Hasan Bey","05553333333","zile@demo.com","kafe","Zile","Tokat","Meshur Zile kahvesi."),
+        ("Carsi Kuyumculuk","Ahmet","05554444444","kuyum@demo.com","kuyumcu","Merkez","Sivas","22 ayar bilezik."),
+        ("Yesilirmak Pide","Osman Usta","05555555555","pide@demo.com","restoran","Carsamba","Samsun","Tas firinda pide."),
+        ("Mardin Yoresel","Meryem","05556666666","mardin@demo.com","yoresel","Merkez","Mardin","El yapimi sabun."),
+        ("Usta Eller","Kemal","05557777777","usta@demo.com","hizmet","Sehitkamil","Gaziantep","Telefon tamiri."),
+        ("Bursa Iskenderci","Iskender","05558888888","bursa@demo.com","restoran","Osmangazi","Bursa","Iskender kebap."),
+        ("Ankara Bakkal","Veli Amca","05559999999","bakkal@demo.com","market","Kecioren","Ankara","Mahalle bakkali."),
+        ("Istanbul Deniz","Kaptan","05550000000","deniz@demo.com","otobus","Kadikoy","Istanbul","Sehirlerarasi otobus."),
+    ]
+    urunler = {
+        "otobus":[("Ankara Seferi","bilet",350,"koltuk",45),("Istanbul Seferi","bilet",500,"koltuk",40)],
+        "restoran":[("Porsiyon Kebap","yemek",180,"porsiyon",30),("Lahmacun","yemek",60,"adet",100)],
+        "kafe":[("Turk Kahvesi","icecek",40,"fincan",50),("Zile Kahvesi","icecek",50,"fincan",40)],
+        "kuyumcu":[("Ceyrek Altin","altin",4950,"adet",10),("Bilezik","altin",12500,"adet",5)],
+        "yoresel":[("Zeytinyagi","gida",150,"litre",30),("Defne Sabunu","kozmetik",45,"adet",100)],
+        "hizmet":[("Telefon Tamir","tamir",500,"islem",0),("Ekran Degisimi","tamir",1200,"islem",0)],
+        "market":[("Ekmek","gida",12,"adet",200),("Sut 1L","gida",35,"adet",50)],
+    }
+    for d in demo:
+        e = db.query(Esnaf).filter(Esnaf.email == d[3]).first()
+        if not e:
+            e = Esnaf(firma_adi=d[0],sahip_adi=d[1],telefon=d[2],email=d[3],
+                      sifre_hash=hash_password("demo123"),dukkan_turu=d[4],ilce=d[5],sehir=d[6],aciklama=d[7])
+            db.add(e); db.flush()
+            for u in urunler.get(d[4], [("Urun","genel",50,"adet",20)]):
+                db.add(Urun(esnaf_id=e.id,ad=u[0],kategori=u[1],fiyat=u[2],birim=u[3],stok=u[4]))
+            for i in range(5):
+                db.add(Islem(esnaf_id=e.id,tur="gelir",kategori="satis",tutar=random.randint(100,2000),
+                           musteri_adi=random.choice(["Ali","Ayse","Veli"]),
+                           tarih=datetime.now(timezone.utc)-timedelta(hours=random.randint(1,720))))
+    db.commit()
+    return {"mesaj": "10 esnaf, 7 sehir - demo verisi hazir! sifre: demo123"}
+
 # Serve frontend static files
 from fastapi.staticfiles import StaticFiles
 import os
