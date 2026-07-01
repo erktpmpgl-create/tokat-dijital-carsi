@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Veritabanı (yerel)
+*.db
+*.sqlite3
+backend/tokat_carsi.db
+
+# Ortam / sırlar
+.env
+*.env
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store

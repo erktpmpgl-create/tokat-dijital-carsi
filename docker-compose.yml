@@ -9,5 +9,10 @@ services:
       - "traefik.http.routers.tokat-carsi.rule=Host(`tokat-carsi.srv1779386.hstgr.cloud`)"
       - "traefik.http.routers.tokat-carsi.tls.certresolver=letsencrypt"
       - "traefik.http.services.tokat-carsi.loadbalancer.server.port=80"
-    environment:
-      - SECRET_KEY=tokat-dijital-carsi-prod-key-2026
+    env_file:
+      - .env
+    volumes:
+      - tokat_data:/app/data
+
+volumes:
+  tokat_data:

@@ -126,6 +126,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Tokat Dijital Carsi API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+# n8n köprü uçları (/api/whatsapp/handle, /api/esnaf, /api/kurye/en-yakin)
+from router_n8n import router as n8n_router
+app.include_router(n8n_router)
+
 
 def _seed_egitim(db: Session):
     if db.query(Egitim).count() > 0:
