@@ -1,0 +1,121 @@
+{
+  "name": "Tokat DÇ — 4 Kurye Eşleştirme",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tokat-kurye",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf4-node-01",
+      "name": "Teslimat İsteği Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-360, 0],
+      "webhookId": "tokat-kurye",
+      "notes": "Backend POST eder: { siparis_id, esnaf_adi, alis_adres, teslim_adres, teslim_konum }"
+    },
+    {
+      "parameters": { "respondWith": "text", "responseBody": "OK", "options": {} },
+      "id": "wf4-node-02",
+      "name": "Hemen 200 Dön",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-140, -160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_URL }}/api/kurye/en-yakin",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-API-Key", "value": "={{ $env.BACKEND_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ alis_adres: $json.body.alis_adres, teslim_konum: $json.body.teslim_konum }) }}",
+        "options": {}
+      },
+      "id": "wf4-node-03",
+      "name": "Backend: En Yakın Kurye",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [80, 0],
+      "notes": "Backend en yakın boştaki kuryeyi döndürür: { kurye_phone, kurye_adi, mesafe_km, ucret }"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            { "id": "k1", "leftValue": "={{ $json.kurye_phone }}", "rightValue": "", "operator": { "type": "string", "operation": "notEmpty" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf4-node-04",
+      "name": "Kurye Bulundu mu?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [300, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_PHONE_NUMBER_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product:'whatsapp', to: $json.kurye_phone, type:'interactive', interactive: { type:'button', body:{ text: '🛵 Yeni teslimat!\\n\\nEsnaf: ' + $('Teslimat İsteği Webhook').item.json.body.esnaf_adi + '\\nAlış: ' + $('Teslimat İsteği Webhook').item.json.body.alis_adres + '\\nTeslim: ' + $('Teslimat İsteği Webhook').item.json.body.teslim_adres + '\\nMesafe: ' + $json.mesafe_km + ' km\\nÜcret: ' + $json.ucret + ' TL' }, action:{ buttons: [ { type:'reply', reply:{ id: 'kabul_' + $('Teslimat İsteği Webhook').item.json.body.siparis_id, title:'Kabul Et' } }, { type:'reply', reply:{ id: 'ret_' + $('Teslimat İsteği Webhook').item.json.body.siparis_id, title:'Reddet' } } ] } } }) }}",
+        "options": {}
+      },
+      "id": "wf4-node-05",
+      "name": "Kuryeye İş Ata (WhatsApp)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, -100],
+      "notes": "Kabul/Reddet butonlu interaktif mesaj. Yanıt Workflow 1'deki webhook'a düşer, backend atamayı işler."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_PHONE_NUMBER_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product:'whatsapp', to: $env.OPERATOR_PHONE, type:'text', text:{ body: '⚠️ Boşta kurye yok! Sipariş: ' + $('Teslimat İsteği Webhook').item.json.body.siparis_id + ' — manuel atama gerekli.' } }) }}",
+        "options": {}
+      },
+      "id": "wf4-node-06",
+      "name": "Operatöre Uyarı",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 120]
+    }
+  ],
+  "connections": {
+    "Teslimat İsteği Webhook": { "main": [[{ "node": "Hemen 200 Dön", "type": "main", "index": 0 }, { "node": "Backend: En Yakın Kurye", "type": "main", "index": 0 }]] },
+    "Backend: En Yakın Kurye": { "main": [[{ "node": "Kurye Bulundu mu?", "type": "main", "index": 0 }]] },
+    "Kurye Bulundu mu?": { "main": [[{ "node": "Kuryeye İş Ata (WhatsApp)", "type": "main", "index": 0 }], [{ "node": "Operatöre Uyarı", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "tags": ["tokat-dijital-carsi", "kurye", "lojistik"]
+}

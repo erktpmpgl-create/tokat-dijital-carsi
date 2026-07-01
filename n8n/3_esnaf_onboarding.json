@@ -1,0 +1,117 @@
+{
+  "name": "Tokat DÇ — 3 Esnaf Kaydı / Onboarding",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tokat-esnaf-kayit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf3-node-01",
+      "name": "Kayıt Formu Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-360, 0],
+      "webhookId": "tokat-esnaf-kayit",
+      "notes": "Web formu POST eder: { isim, dukkan, telefon, kategori, email }"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            { "id": "v1", "leftValue": "={{ $json.body.telefon }}", "rightValue": "", "operator": { "type": "string", "operation": "notEmpty" } },
+            { "id": "v2", "leftValue": "={{ $json.body.dukkan }}", "rightValue": "", "operator": { "type": "string", "operation": "notEmpty" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf3-node-02",
+      "name": "Zorunlu Alanlar Var mı?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [-140, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.BACKEND_URL }}/api/esnaf",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-API-Key", "value": "={{ $env.BACKEND_API_KEY }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ isim: $json.body.isim, dukkan: $json.body.dukkan, telefon: $json.body.telefon, kategori: $json.body.kategori, email: $json.body.email }) }}",
+        "options": {}
+      },
+      "id": "wf3-node-03",
+      "name": "Backend: Esnaf Oluştur",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [100, -100],
+      "notes": "Backend esnafı kaydeder, panel giriş bilgisi/link döndürür."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_PHONE_NUMBER_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product:'whatsapp', to: $('Kayıt Formu Webhook').item.json.body.telefon, type:'text', text:{ body: 'Hoş geldiniz ' + $('Kayıt Formu Webhook').item.json.body.dukkan + '! 🧡\\n\\nTokat Dijital Çarşı ailesine katıldınız. Komisyonsuz satış, kendi müşteri veriniz, dijital vitrin — hepsi sizin.\\n\\nPanel girişiniz: ' + $env.PANEL_URL + '\\n\\nSorularınız için bu numaradan bize yazabilirsiniz.' } }) }}",
+        "options": {}
+      },
+      "id": "wf3-node-04",
+      "name": "Karşılama WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [320, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, mesaj: 'Kayıt alındı, karşılama mesajı gönderildi.' }) }}",
+        "options": {}
+      },
+      "id": "wf3-node-05",
+      "name": "Başarılı Yanıt",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [540, -100]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "={{ JSON.stringify({ ok: false, hata: 'Dükkan adı ve telefon zorunludur.' }) }}",
+        "options": {}
+      },
+      "id": "wf3-node-06",
+      "name": "Hatalı Form Yanıtı",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [100, 140]
+    }
+  ],
+  "connections": {
+    "Kayıt Formu Webhook": { "main": [[{ "node": "Zorunlu Alanlar Var mı?", "type": "main", "index": 0 }]] },
+    "Zorunlu Alanlar Var mı?": { "main": [[{ "node": "Backend: Esnaf Oluştur", "type": "main", "index": 0 }], [{ "node": "Hatalı Form Yanıtı", "type": "main", "index": 0 }]] },
+    "Backend: Esnaf Oluştur": { "main": [[{ "node": "Karşılama WhatsApp", "type": "main", "index": 0 }]] },
+    "Karşılama WhatsApp": { "main": [[{ "node": "Başarılı Yanıt", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "tags": ["tokat-dijital-carsi", "esnaf", "onboarding"]
+}

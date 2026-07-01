@@ -1,0 +1,29 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.srv1779386.hstgr.cloud`)"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+    env_file:
+      - .env
+    environment:
+      - N8N_HOST=n8n.srv1779386.hstgr.cloud
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://n8n.srv1779386.hstgr.cloud/
+      - N8N_EDITOR_BASE_URL=https://n8n.srv1779386.hstgr.cloud/
+      - N8N_SECURE_COOKIE=true
+      - N8N_PROXY_HOPS=1
+      - GENERIC_TIMEZONE=Europe/Istanbul
+      - TZ=Europe/Istanbul
+      - N8N_RUNNERS_ENABLED=true
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  n8n_data:

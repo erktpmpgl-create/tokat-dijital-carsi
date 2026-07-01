@@ -1,0 +1,115 @@
+{
+  "name": "Tokat DÇ — 2 Sipariş & Ödeme Bildirimi",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tokat-siparis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "wf2-node-01",
+      "name": "Backend Olay Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-360, 0],
+      "webhookId": "tokat-siparis",
+      "notes": "Backend POST eder: { event, esnaf_phone, customer_phone, customer_name, ozet, tutar }"
+    },
+    {
+      "parameters": { "respondWith": "text", "responseBody": "OK", "options": {} },
+      "id": "wf2-node-02",
+      "name": "Hemen 200 Dön",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [-140, -160]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "loose" },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "s1", "leftValue": "={{ $json.body.event }}", "rightValue": "yeni_siparis", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Yeni Sipariş"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": false, "typeValidation": "loose" },
+                "combinator": "and",
+                "conditions": [
+                  { "id": "s2", "leftValue": "={{ $json.body.event }}", "rightValue": "odeme_alindi", "operator": { "type": "string", "operation": "equals" } }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Ödeme Alındı"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf2-node-03",
+      "name": "Olay Tipi",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [80, 40]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_PHONE_NUMBER_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product:'whatsapp', to: $json.body.esnaf_phone, type:'text', text:{ body: '🛎️ Yeni sipariş!\\n\\nMüşteri: ' + $json.body.customer_name + '\\nÖzet: ' + $json.body.ozet + '\\nTutar: ' + $json.body.tutar + ' TL\\n\\nPanelinizden onaylayın: ' + $env.PANEL_URL } }) }}",
+        "options": {}
+      },
+      "id": "wf2-node-04",
+      "name": "Esnafa Sipariş Bildir",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [320, -80]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.WA_PHONE_NUMBER_ID }}/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $env.WA_TOKEN }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product:'whatsapp', to: $json.body.customer_phone, type:'text', text:{ body: '✅ Ödemeniz alındı, teşekkürler!\\n\\nTutar: ' + $json.body.tutar + ' TL\\nSipariş: ' + $json.body.ozet + '\\n\\nEsnafımız hazırlığa başladı. Tokat Dijital Çarşı 🧡' } }) }}",
+        "options": {}
+      },
+      "id": "wf2-node-05",
+      "name": "Müşteriye Ödeme Onayı",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [320, 160]
+    }
+  ],
+  "connections": {
+    "Backend Olay Webhook": { "main": [[{ "node": "Hemen 200 Dön", "type": "main", "index": 0 }, { "node": "Olay Tipi", "type": "main", "index": 0 }]] },
+    "Olay Tipi": { "main": [[{ "node": "Esnafa Sipariş Bildir", "type": "main", "index": 0 }], [{ "node": "Müşteriye Ödeme Onayı", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false,
+  "tags": ["tokat-dijital-carsi", "whatsapp", "siparis"]
+}
